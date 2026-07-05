@@ -38,6 +38,19 @@ model User {
 
   conversations ConversationParticipant[]
   messages      Message[]
+
+  importDraft ImportDraft?
+}
+
+/// A parsed-but-not-yet-approved CV import. One per user; the candidate
+/// reviews and applies (or discards) it — nothing touches the profile
+/// until they approve. GDPR: deleted on apply, discard, or account deletion.
+model ImportDraft {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payload   Json
+  createdAt DateTime @default(now())
 }
 
 // ---------- Candidate side ----------

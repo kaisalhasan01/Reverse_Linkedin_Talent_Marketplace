@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "/Users/Kais/.nvm/versions/node/v24.16.0/bin/node",
+      "runtimeArgs": [
+        "/Users/Kais/Reverse linkedin/node_modules/next/dist/bin/next",
+        "dev",
+        "/Users/Kais/Reverse linkedin"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "db",
+      "runtimeExecutable": "/Users/Kais/.nvm/versions/node/v24.16.0/bin/node",
+      "runtimeArgs": [
+        "/Users/Kais/Reverse linkedin/scripts/db-server.mjs"
+      ],
+      "port": 5433
+    }
+  ]
+}

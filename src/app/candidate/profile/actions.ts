@@ -44,6 +44,7 @@ export async function updateBasics(formData: FormData) {
       location: parsed.data.location,
       bio: parsed.data.bio,
       skills,
+      openToRemote: formData.get("openToRemote") === "1",
     },
   });
   revalidatePath(PROFILE_PATH, "layout"); // badge in the shell shows status/identity

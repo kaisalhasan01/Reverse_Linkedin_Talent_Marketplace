@@ -8,7 +8,7 @@ import { respondToRequest, sendConnectionRequest } from "./actions";
 export default async function ConnectionsPage() {
   const user = await requireCandidate();
 
-  const [incoming, mine, candidates] = await Promise.all([
+  const [incoming, mine, candidates, allAccepted] = await Promise.all([
     // Pending requests waiting for my answer
     prisma.connection.findMany({
       where: { addresseeId: user.id, status: "PENDING" },
@@ -27,7 +27,26 @@ export default async function ConnectionsPage() {
       select: { id: true, name: true, candidateProfile: { select: { headline: true } } },
       orderBy: { createdAt: "desc" },
     }),
+    // Whole accepted graph — small enough to intersect in memory for
+    // "N mutual connections" (LinkedIn's strongest social proof).
+    prisma.connection.findMany({
+      where: { status: "ACCEPTED" },
+      select: { requesterId: true, addresseeId: true },
+    }),
   ]);
+
+  // adjacency: userId -> set of connected userIds
+  const neighbors = new Map<string, Set<string>>();
+  for (const { requesterId, addresseeId } of allAccepted) {
+    (neighbors.get(requesterId) ?? neighbors.set(requesterId, new Set()).get(requesterId)!).add(addresseeId);
+    (neighbors.get(addresseeId) ?? neighbors.set(addresseeId, new Set()).get(addresseeId)!).add(requesterId);
+  }
+  const myNetwork = neighbors.get(user.id) ?? new Set<string>();
+  const mutualCount = (otherId: string) => {
+    let n = 0;
+    for (const id of neighbors.get(otherId) ?? []) if (myNetwork.has(id)) n++;
+    return n;
+  };
 
   const accepted = mine
     .filter((c) => c.status === "ACCEPTED")
@@ -89,7 +108,11 @@ export default async function ConnectionsPage() {
         <div className="space-y-3">
           {suggestions.map((p) => (
             <Card key={p.id} className="flex items-center justify-between gap-4">
-              <PersonRow name={p.name} headline={p.candidateProfile?.headline} />
+              <PersonRow
+                name={p.name}
+                headline={p.candidateProfile?.headline}
+                mutual={mutualCount(p.id)}
+              />
               {outgoingPending.has(p.id) ? (
                 <span className="shrink-0 text-sm text-zinc-400">Requested</span>
               ) : (
@@ -108,13 +131,26 @@ export default async function ConnectionsPage() {
   );
 }
 
-function PersonRow({ name, headline }: { name: string; headline?: string | null }) {
+function PersonRow({
+  name,
+  headline,
+  mutual,
+}: {
+  name: string;
+  headline?: string | null;
+  mutual?: number;
+}) {
   return (
     <div className="flex min-w-0 items-center gap-3">
       <Avatar name={name} />
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold">{name}</p>
         {headline ? <p className="truncate text-xs text-zinc-500">{headline}</p> : null}
+        {mutual ? (
+          <p className="text-xs text-sky-600 dark:text-sky-400">
+            {mutual} mutual connection{mutual === 1 ? "" : "s"}
+          </p>
+        ) : null}
       </div>
     </div>
   );

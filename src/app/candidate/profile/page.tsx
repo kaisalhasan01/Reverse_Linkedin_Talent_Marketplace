@@ -116,6 +116,10 @@ export default async function ProfilePage() {
           <Field label="About">
             <Textarea name="bio" defaultValue={profile.bio} maxLength={2000} />
           </Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="openToRemote" value="1" defaultChecked={profile.openToRemote} />
+            Open to remote work
+          </label>
           <Button type="submit" size="sm">Save</Button>
         </form>
       </details>
