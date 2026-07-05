@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
+import { requireCompany } from "@/lib/session";
+import { prisma } from "@/lib/db";
 import { TopNav, type NavItem } from "@/components/shared/top-nav";
+import { UserMenu } from "@/components/shared/user-menu";
+import { Badge } from "@/components/ui/badge";
 
 const companyNav: NavItem[] = [
   { href: "/company/dashboard", label: "Dashboard" },
@@ -8,12 +12,21 @@ const companyNav: NavItem[] = [
   { href: "/company/billing", label: "Billing" },
 ];
 
-/**
- * Shell for the company-facing app (role: COMPANY). In Phase 3 this layout
- * guards the routes; later it also checks for an active subscription before
- * unlocking candidate search.
- */
-export default function CompanyLayout({ children }: { children: ReactNode }) {
+const subscriptionBadge = {
+  TRIALING: { tone: "amber" as const, label: "Trial" },
+  ACTIVE: { tone: "green" as const, label: "Active plan" },
+  CANCELED: { tone: "neutral" as const, label: "Canceled" },
+};
+
+/** Shell + auth guard for the company app: must be a signed-in COMPANY user. */
+export default async function CompanyLayout({ children }: { children: ReactNode }) {
+  const user = await requireCompany();
+  const company = await prisma.company.findUnique({
+    where: { ownerId: user.id },
+    select: { name: true, subscriptionStatus: true },
+  });
+  const badge = subscriptionBadge[company?.subscriptionStatus ?? "TRIALING"];
+
   return (
     <div className="flex min-h-full flex-col">
       <TopNav
@@ -21,9 +34,10 @@ export default function CompanyLayout({ children }: { children: ReactNode }) {
         brandLabel="Reverse for Recruiters"
         items={companyNav}
         actions={
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-            Trial
-          </span>
+          <UserMenu
+            name={company?.name ?? user.name ?? "Company"}
+            badge={<Badge tone={badge.tone}>{badge.label}</Badge>}
+          />
         }
       />
       <main className="flex-1">{children}</main>

@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
+import { requireCandidate } from "@/lib/session";
+import { prisma } from "@/lib/db";
 import { TopNav, type NavItem } from "@/components/shared/top-nav";
+import { UserMenu } from "@/components/shared/user-menu";
+import { Badge } from "@/components/ui/badge";
 
 const candidateNav: NavItem[] = [
   { href: "/candidate/feed", label: "Feed" },
@@ -8,20 +12,29 @@ const candidateNav: NavItem[] = [
   { href: "/candidate/messages", label: "Messages" },
 ];
 
-/**
- * Shell for the candidate-facing app (role: CANDIDATE). In Phase 3 this layout
- * becomes the guard that redirects anyone who isn't a signed-in candidate.
- */
-export default function CandidateLayout({ children }: { children: ReactNode }) {
+/** Shell + auth guard for the candidate app: must be a signed-in CANDIDATE. */
+export default async function CandidateLayout({ children }: { children: ReactNode }) {
+  const user = await requireCandidate();
+  const profile = await prisma.candidateProfile.findUnique({
+    where: { userId: user.id },
+    select: { status: true },
+  });
+  const looking = profile?.status === "LOOKING";
+
   return (
     <div className="flex min-h-full flex-col">
       <TopNav
         brandHref="/candidate/feed"
         items={candidateNav}
         actions={
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-            Looking for work
-          </span>
+          <UserMenu
+            name={user.name ?? "You"}
+            badge={
+              <Badge tone={looking ? "green" : "neutral"}>
+                {looking ? "Looking for work" : "Employed"}
+              </Badge>
+            }
+          />
         }
       />
       <main className="flex-1">{children}</main>
