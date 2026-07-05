@@ -29,6 +29,7 @@ export default async function CandidateLayout({ children }: { children: ReactNod
         actions={
           <UserMenu
             name={user.name ?? "You"}
+            settingsHref="/candidate/settings"
             badge={
               <Badge tone={looking ? "green" : "neutral"}>
                 {looking ? "Looking for work" : "Employed"}

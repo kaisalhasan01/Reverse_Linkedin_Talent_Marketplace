@@ -36,6 +36,7 @@ export default async function CompanyLayout({ children }: { children: ReactNode 
         actions={
           <UserMenu
             name={company?.name ?? user.name ?? "Company"}
+            settingsHref="/company/settings"
             badge={<Badge tone={badge.tone}>{badge.label}</Badge>}
           />
         }

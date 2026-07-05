@@ -75,6 +75,14 @@ export function SignUpForm() {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Creating account…" : role === "COMPANY" ? "Create company account" : "Create free account"}
       </Button>
+
+      <p className="text-center text-xs text-zinc-500">
+        By creating an account you agree to how we handle your data — see the{" "}
+        <a href="/privacy" target="_blank" className="underline">
+          Privacy Policy
+        </a>
+        . Export or delete everything, any time, from Settings.
+      </p>
     </form>
   );
 }
