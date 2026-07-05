@@ -1,11 +1,13 @@
-import { PagePlaceholder } from "@/components/shared/page-placeholder";
+import { requireCandidate } from "@/lib/session";
+import { Inbox } from "@/components/messaging/inbox";
 
-export default function CandidateMessagesPage() {
-  return (
-    <PagePlaceholder
-      area="Candidate"
-      title="Messages"
-      description="Conversations with your connections and incoming offers from companies."
-    />
-  );
+export default async function CandidateMessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string }>;
+}) {
+  const user = await requireCandidate();
+  const { c } = await searchParams;
+
+  return <Inbox userId={user.id} basePath="/candidate/messages" selectedId={c} />;
 }
