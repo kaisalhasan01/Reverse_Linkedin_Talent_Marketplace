@@ -45,16 +45,18 @@ export async function searchCandidates({ q, skill, location }: CandidateSearchPa
     conditions.push(Prisma.sql`p."location" ILIKE ${"%" + locationTerm + "%"}`);
   }
 
-  const rank = term
-    ? Prisma.sql`ts_rank(${doc}, websearch_to_tsquery('english', ${term}))`
-    : Prisma.sql`0`;
+  // NB: a bare integer constant in ORDER BY is read as a column ordinal by
+  // Postgres, so the no-query case must drop the rank expression entirely.
+  const orderBy = term
+    ? Prisma.sql`ts_rank(${doc}, websearch_to_tsquery('english', ${term})) DESC, p."updatedAt" DESC`
+    : Prisma.sql`p."updatedAt" DESC`;
 
   const rows = await prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
     SELECT p."id"
     FROM "CandidateProfile" p
     JOIN "User" u ON u."id" = p."userId"
     WHERE ${Prisma.join(conditions, " AND ")}
-    ORDER BY ${rank} DESC, p."updatedAt" DESC
+    ORDER BY ${orderBy}
     LIMIT 30
   `);
   const ids = rows.map((r) => r.id);
