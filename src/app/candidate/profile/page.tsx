@@ -33,6 +33,20 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-8">
+      {/* CV import entry point */}
+      <a
+        href="/candidate/profile/import"
+        className="mb-4 flex items-center justify-between gap-4 rounded-2xl border border-dashed border-black/15 px-5 py-4 transition-colors hover:border-foreground dark:border-white/20"
+      >
+        <span>
+          <span className="block text-sm font-semibold">Import from CV</span>
+          <span className="block text-xs text-zinc-500">
+            Upload a PDF and we prefill experience, education and skills — you approve before anything is saved.
+          </span>
+        </span>
+        <span className="shrink-0 text-sm font-medium text-sky-600 dark:text-sky-400">Upload →</span>
+      </a>
+
       <ProfileDisplay
         profile={profile}
         headerExtra={
