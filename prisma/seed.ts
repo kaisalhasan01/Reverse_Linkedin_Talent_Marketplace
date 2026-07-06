@@ -80,6 +80,7 @@ const candidates: CandidateSeed[] = [
     experiences: [
       { title: "Platform Engineer", company: "IKEA", startDate: "2019-04-01", description: "Internal developer platform for 300+ engineers." },
     ],
+    educations: [{ school: "Lund University", degree: "BSc", field: "Computer Science", startYear: 2013, endYear: 2016 }],
     certifications: [{ name: "CKA: Certified Kubernetes Administrator", issuer: "CNCF", year: 2022 }],
   },
   {
@@ -106,6 +107,7 @@ const candidates: CandidateSeed[] = [
     experiences: [
       { title: "Backend Engineer", company: "Swish", startDate: "2020-02-01", description: "Real-time payment rails, 5k TPS peak." },
     ],
+    educations: [{ school: "KTH Royal Institute of Technology", degree: "MSc", field: "Software Engineering", startYear: 2014, endYear: 2019 }],
   },
   {
     email: "elin@demo.se",
@@ -118,6 +120,7 @@ const candidates: CandidateSeed[] = [
     experiences: [
       { title: "Data Engineer", company: "ICA", startDate: "2021-01-01", description: "Built the retail analytics platform: 200+ dbt models." },
     ],
+    educations: [{ school: "Uppsala University", degree: "MSc", field: "Data Science", startYear: 2015, endYear: 2020 }],
   },
   {
     email: "david@demo.se",
@@ -130,6 +133,7 @@ const candidates: CandidateSeed[] = [
     experiences: [
       { title: "iOS Developer", company: "Volvo Cars", startDate: "2019-10-01", description: "Volvo Cars companion app, 4.7★ on the App Store." },
     ],
+    educations: [{ school: "Chalmers University of Technology", degree: "BSc", field: "Software Engineering", startYear: 2015, endYear: 2018 }],
   },
   {
     email: "lisa@demo.se",
@@ -164,6 +168,7 @@ const candidates: CandidateSeed[] = [
     experiences: [
       { title: "Frontend Engineer", company: "Trustly", startDate: "2022-01-01", description: "Payment UI SDK embedded on 8k+ merchant sites." },
     ],
+    educations: [{ school: "Malmö University", degree: "BSc", field: "Interaction Design", startYear: 2016, endYear: 2019 }],
   },
   {
     email: "gustav@demo.se",

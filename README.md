@@ -9,15 +9,27 @@ front.
 
 **For candidates (free)**
 - Rich profile: experience, education, projects, skills, certifications
+- **CV import**: upload a PDF → text extracted on our server → structured by Claude
+  (or a local heuristic without an API key) → candidate reviews and approves before
+  anything is saved
 - *Looking for work / Employed* toggle — employed users are invisible to companies
-- Social layer: feed with posts, likes and comments; connection requests; direct messages
+- Social layer: feed with posts, likes and comments; connection requests with
+  **mutual-connections** social proof; direct messages
 
 **For companies (subscription)**
 - Full-text candidate search (Postgres `tsvector`, `websearch_to_tsquery` + `ts_rank`)
-  with skill and location filters — only over candidates who are actively looking
+  over profile **and work history/education**, with filters: skill, location,
+  university, past employer, minimum years of experience, open-to-remote —
+  only over candidates who are actively looking
+- **Compliance by design**: no gender/age fields or filters exist
+  (diskrimineringslagen 2008:567 + GDPR data minimisation)
 - Candidate detail view + direct outreach with **structured job offers**
   (title, salary range, hours/week, location) rendered as offer cards in the thread
 - Dashboard with live market stats; billing page with subscription state (Stripe-ready)
+
+**GDPR**
+- `/privacy` policy that maps 1:1 to actual behavior; single essential cookie (no banner needed)
+- Data export as JSON (Art. 20) and account deletion with full cascade (Art. 17) from Settings
 
 ## Tech stack
 
@@ -85,5 +97,6 @@ npm run dev                  #             app on http://localhost:3000
 - [x] Phase 4 — company search (Postgres FTS)
 - [x] Phase 5 — messaging & structured offers
 - [x] Phase 6 — social feed
+- [x] Wave 2 — advanced filters, mutual connections, GDPR package, CV import
 - [ ] Stripe subscriptions (checkout + webhooks + gating)
 - [ ] Deploy: Vercel + Supabase
