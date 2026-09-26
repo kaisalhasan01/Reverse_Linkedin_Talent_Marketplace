@@ -53,6 +53,16 @@ model ImportDraft {
   createdAt DateTime @default(now())
 }
 
+/// Fixed-window counters for rate limiting (sign-in, sign-up, outreach).
+/// In Postgres rather than memory so limits hold across serverless instances.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
 // ---------- Candidate side ----------
 
 enum WorkStatus {

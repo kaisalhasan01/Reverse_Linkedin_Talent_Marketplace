@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { LOCKED_REASON } from "@/lib/billing";
 import { currentCompany } from "@/lib/paid-access";
+import { LIMITS, rateLimit, retryIn } from "@/lib/rate-limit";
 import { createMessage, getOrCreateConversation } from "@/lib/messaging";
 import { outreachSchema } from "@/lib/validation";
 
@@ -42,6 +43,12 @@ export async function startOutreach(
   const parsed = outreachSchema.safeParse(values);
   if (!parsed.success) return { error: parsed.error.issues[0].message, values };
   const d = parsed.data;
+
+  // Anti-spam: generous for real recruiting, a hard stop for bulk messaging.
+  const limited = await rateLimit(`outreach:${user.id}`, LIMITS.outreachPerCompany);
+  if (!limited.ok) {
+    return { error: `Daily outreach limit reached. Try again in ${retryIn(limited.retryAfterSeconds)}.`, values };
+  }
 
   const conversation = await getOrCreateConversation(user.id, candidateUserId);
   await createMessage(
