@@ -226,16 +226,25 @@ model Message {
   @@index([conversationId, createdAt])
 }
 
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 /// A structured job offer attached to a message — the core "companies reach
-/// out with real terms" feature (salary, role, hours up front).
+/// out with real terms" feature (salary, role, hours up front). The
+/// candidate answers it once: ACCEPTED or DECLINED.
 model JobOffer {
-  id           String  @id @default(cuid())
-  messageId    String  @unique
-  message      Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  id           String      @id @default(cuid())
+  messageId    String      @unique
+  message      Message     @relation(fields: [messageId], references: [id], onDelete: Cascade)
   title        String
   salaryMin    Int?
   salaryMax    Int?
-  currency     String  @default("SEK")
+  currency     String      @default("SEK")
   hoursPerWeek Int?
-  location     String  @default("")
+  location     String      @default("")
+  status       OfferStatus @default(PENDING)
+  respondedAt  DateTime?
 }

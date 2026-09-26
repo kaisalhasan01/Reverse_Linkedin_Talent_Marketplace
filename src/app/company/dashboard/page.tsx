@@ -11,12 +11,13 @@ export default async function DashboardPage() {
   const user = await requireCompany();
 
   const weekAgo = daysAgo(7);
-  const [company, lookingCount, newThisWeek, conversationCount, offersSent, recent] = await Promise.all([
+  const [company, lookingCount, newThisWeek, conversationCount, offersSent, offersAccepted, recent] = await Promise.all([
     prisma.company.findUnique({ where: { ownerId: user.id } }),
     prisma.candidateProfile.count({ where: { status: "LOOKING" } }),
     prisma.candidateProfile.count({ where: { status: "LOOKING", user: { createdAt: { gte: weekAgo } } } }),
     prisma.conversation.count({ where: { participants: { some: { userId: user.id } } } }),
     prisma.jobOffer.count({ where: { message: { senderId: user.id } } }),
+    prisma.jobOffer.count({ where: { message: { senderId: user.id }, status: "ACCEPTED" } }),
     prisma.candidateProfile.findMany({
       where: { status: "LOOKING" },
       orderBy: { updatedAt: "desc" },
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
     { label: "Candidates looking now", value: lookingCount },
     { label: "New this week", value: newThisWeek },
     { label: "Your conversations", value: conversationCount },
-    { label: "Offers sent", value: offersSent },
+    { label: "Offers sent", value: offersSent, hint: `${offersAccepted} accepted` },
   ];
 
   return (
@@ -52,7 +53,10 @@ export default async function DashboardPage() {
         {stats.map((s) => (
           <Card key={s.label}>
             <p className="text-3xl font-semibold tracking-tight">{s.value}</p>
-            <p className="mt-1 text-sm text-zinc-500">{s.label}</p>
+            <p className="mt-1 text-sm text-zinc-500">
+              {s.label}
+              {"hint" in s ? <span className="text-emerald-600 dark:text-emerald-400"> · {s.hint}</span> : null}
+            </p>
           </Card>
         ))}
       </div>

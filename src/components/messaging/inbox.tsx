@@ -14,10 +14,12 @@ import { cn } from "@/lib/utils";
  */
 export async function Inbox({
   userId,
+  viewerRole,
   basePath,
   selectedId,
 }: {
   userId: string;
+  viewerRole: "CANDIDATE" | "COMPANY";
   basePath: string;
   selectedId?: string;
 }) {
@@ -79,7 +81,7 @@ export async function Inbox({
                       )}
                     >
                       <p className="whitespace-pre-wrap text-sm leading-relaxed">{m.body}</p>
-                      {m.offer ? <OfferCard offer={m.offer} /> : null}
+                      {m.offer ? <OfferCard offer={m.offer} canRespond={!mine && viewerRole === "CANDIDATE"} /> : null}
                       <p className={cn("mt-1 text-[10px]", mine ? "text-background/60" : "text-zinc-400")}>
                         {timeAgo(m.createdAt)}
                       </p>

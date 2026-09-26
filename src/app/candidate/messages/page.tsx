@@ -9,5 +9,5 @@ export default async function CandidateMessagesPage({
   const user = await requireCandidate();
   const { c } = await searchParams;
 
-  return <Inbox userId={user.id} basePath="/candidate/messages" selectedId={c} />;
+  return <Inbox userId={user.id} viewerRole="CANDIDATE" basePath="/candidate/messages" selectedId={c} />;
 }

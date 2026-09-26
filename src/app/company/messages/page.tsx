@@ -9,5 +9,5 @@ export default async function CompanyMessagesPage({
   const user = await requireCompany();
   const { c } = await searchParams;
 
-  return <Inbox userId={user.id} basePath="/company/messages" selectedId={c} />;
+  return <Inbox userId={user.id} viewerRole="COMPANY" basePath="/company/messages" selectedId={c} />;
 }
