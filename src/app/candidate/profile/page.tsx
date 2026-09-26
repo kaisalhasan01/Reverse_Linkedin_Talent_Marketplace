@@ -44,7 +44,7 @@ export default async function ProfilePage() {
             Upload a PDF and we prefill experience, education and skills — you approve before anything is saved.
           </span>
         </span>
-        <span className="shrink-0 text-sm font-medium text-sky-600 dark:text-sky-400">Upload →</span>
+        <span className="shrink-0 text-sm font-medium text-sky-700 dark:text-sky-400">Upload →</span>
       </a>
 
       <ProfileDisplay
@@ -153,7 +153,7 @@ function AddForm({
 }) {
   return (
     <details>
-      <summary className="cursor-pointer text-sm font-medium text-sky-600 dark:text-sky-400">
+      <summary className="cursor-pointer text-sm font-medium text-sky-700 dark:text-sky-400">
         + {summary}
       </summary>
       <form action={action} className="mt-4 space-y-3">

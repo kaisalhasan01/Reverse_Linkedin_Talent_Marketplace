@@ -172,7 +172,7 @@ function Item({
         <p className="text-sm font-medium">{title}</p>
         {meta ? (
           metaHref ? (
-            <a href={metaHref} target="_blank" rel="noreferrer" className="text-xs text-sky-600 underline dark:text-sky-400">
+            <a href={metaHref} target="_blank" rel="noreferrer" className="text-xs text-sky-700 underline dark:text-sky-400">
               {meta}
             </a>
           ) : (

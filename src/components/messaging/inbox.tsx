@@ -31,7 +31,7 @@ export async function Inbox({
     <div className="mx-auto grid w-full max-w-5xl flex-1 grid-cols-1 gap-4 px-6 py-8 md:grid-cols-[280px_1fr]">
       {/* Conversation list */}
       <aside className="space-y-1">
-        <h2 className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide text-zinc-500">Messages</h2>
+        <h1 className="mb-2 px-1 text-sm font-semibold uppercase tracking-wide text-zinc-500">Messages</h1>
         {conversations.map((c) => (
           <Link
             key={c.id}

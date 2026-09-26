@@ -16,24 +16,27 @@ const sizes = {
   md: "h-10 px-5 text-sm",
 } as const;
 
+type ButtonLook = { variant?: keyof typeof variants; size?: keyof typeof sizes; className?: string };
+
+/**
+ * Button look as a class string — for links that should look like buttons.
+ * (Wrapping a <Button> in a <Link> nests a button inside an anchor: invalid
+ * HTML, announced oddly by screen readers, and two tab stops for one action.)
+ */
+export function buttonStyles({ variant = "primary", size = "md", className }: ButtonLook = {}) {
+  return cn(
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors",
+    variants[variant],
+    sizes[size],
+    className,
+  );
+}
+
 export function Button({
-  variant = "primary",
-  size = "md",
+  variant,
+  size,
   className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: keyof typeof variants;
-  size?: keyof typeof sizes;
-}) {
-  return (
-    <button
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors",
-        variants[variant],
-        sizes[size],
-        className,
-      )}
-      {...props}
-    />
-  );
+}: ButtonHTMLAttributes<HTMLButtonElement> & ButtonLook) {
+  return <button className={buttonStyles({ variant, size, className })} {...props} />;
 }

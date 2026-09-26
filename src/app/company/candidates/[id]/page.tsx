@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requirePaidAccess } from "@/lib/paid-access";
-import { Button } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OutreachForm } from "@/components/company/outreach-form";
 import { ProfileDisplay, fullProfileInclude } from "@/components/profile/profile-display";
@@ -58,8 +58,8 @@ function ProfileUnavailable() {
       <p className="mt-2 text-sm text-zinc-500">
         The candidate may have hidden their profile from companies, or the link is wrong.
       </p>
-      <Link href="/company/search" className="mt-6 inline-block">
-        <Button variant="outline">Back to search</Button>
+      <Link href="/company/search" className={buttonStyles({ variant: "outline", className: "mt-6" })}>
+        Back to search
       </Link>
     </div>
   );

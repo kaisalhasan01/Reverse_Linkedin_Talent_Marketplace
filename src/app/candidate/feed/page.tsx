@@ -37,6 +37,7 @@ export default async function FeedPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 px-6 py-8">
+      <h1 className="sr-only">Feed</h1>
       <Card>
         <Composer />
       </Card>

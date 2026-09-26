@@ -4,7 +4,7 @@ import { LOCKED_REASON } from "@/lib/billing";
 import { currentCompany } from "@/lib/paid-access";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { daysAgo } from "@/lib/format";
 
@@ -47,8 +47,8 @@ export default async function DashboardPage() {
             The talent pool is live — here&apos;s what&apos;s moving.
           </p>
         </div>
-        <Link href={access.allowed ? "/company/search" : "/company/billing"}>
-          <Button>{access.allowed ? "Search candidates" : "Choose a plan"}</Button>
+        <Link href={access.allowed ? "/company/search" : "/company/billing"} className={buttonStyles()}>
+          {access.allowed ? "Search candidates" : "Choose a plan"}
         </Link>
       </div>
 
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
             <p className="text-3xl font-semibold tracking-tight">{s.value}</p>
             <p className="mt-1 text-sm text-zinc-500">
               {s.label}
-              {"hint" in s ? <span className="text-emerald-600 dark:text-emerald-400"> · {s.hint}</span> : null}
+              {"hint" in s ? <span className="text-emerald-700 dark:text-emerald-400"> · {s.hint}</span> : null}
             </p>
           </Card>
         ))}
@@ -88,8 +88,11 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <Badge tone="green">Looking</Badge>
-                  <Link href={`/company/candidates/${p.id}`}>
-                    <Button variant="outline" size="sm">View</Button>
+                  <Link
+                    href={`/company/candidates/${p.id}`}
+                    className={buttonStyles({ variant: "outline", size: "sm" })}
+                  >
+                    View
                   </Link>
                 </div>
               </Card>

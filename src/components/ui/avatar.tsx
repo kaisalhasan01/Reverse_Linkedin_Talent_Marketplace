@@ -1,13 +1,17 @@
 import { cn } from "@/lib/utils";
 
-/** Initials avatar — deterministic background per name, no image uploads in MVP. */
+/**
+ * Initials avatar — deterministic background per name, no image uploads in MVP.
+ * Shades chosen so white initials meet WCAG AA (≥ 4.5:1; the -600s of
+ * sky/emerald/amber/teal were 3.2–4.0).
+ */
 const palette = [
-  "bg-sky-600",
-  "bg-emerald-600",
+  "bg-sky-700",
+  "bg-emerald-700",
   "bg-violet-600",
-  "bg-rose-600",
-  "bg-amber-600",
-  "bg-teal-600",
+  "bg-rose-700",
+  "bg-amber-700",
+  "bg-teal-700",
 ];
 
 export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {

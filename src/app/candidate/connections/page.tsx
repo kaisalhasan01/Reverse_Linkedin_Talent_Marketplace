@@ -61,6 +61,7 @@ export default async function ConnectionsPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-8">
+      <h1 className="sr-only">Connections</h1>
       {incoming.length > 0 ? (
         <section>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
@@ -147,7 +148,7 @@ function PersonRow({
         <p className="truncate text-sm font-semibold">{name}</p>
         {headline ? <p className="truncate text-xs text-zinc-500">{headline}</p> : null}
         {mutual ? (
-          <p className="text-xs text-sky-600 dark:text-sky-400">
+          <p className="text-xs text-sky-700 dark:text-sky-400">
             {mutual} mutual connection{mutual === 1 ? "" : "s"}
           </p>
         ) : null}

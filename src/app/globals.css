@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
+/*
+ * Muted text. The app uses Tailwind's zinc-400/500 for secondary text
+ * everywhere, but stock zinc-400 is 2.6:1 on white and stock zinc-500 is
+ * 4.1:1 on the dark background — below WCAG AA (4.5:1). Both are tuned per
+ * colour scheme here (checked against white, the grey chat bubble, black
+ * and the dark bubble) instead of at ~70 call sites. Only text uses them.
+ */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --color-zinc-400: oklch(53% 0.016 286); /* 5.3:1 on white */
+  --color-zinc-500: oklch(50% 0.016 286); /* 6.0:1 on white */
 }
 
 @theme inline {
@@ -16,6 +25,8 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --color-zinc-400: oklch(70.5% 0.015 286.067); /* stock, 7.5:1 on black */
+    --color-zinc-500: oklch(68% 0.015 286); /* 6.9:1 on black */
   }
 }
 

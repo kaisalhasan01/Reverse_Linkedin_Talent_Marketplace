@@ -31,7 +31,7 @@ export function SignUpForm() {
           <label
             key={opt.value}
             className={cn(
-              "cursor-pointer rounded-2xl border p-4 transition-colors",
+              "cursor-pointer rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-sky-500 has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-background",
               role === opt.value
                 ? "border-foreground"
                 : "border-black/10 hover:border-black/30 dark:border-white/15 dark:hover:border-white/40",

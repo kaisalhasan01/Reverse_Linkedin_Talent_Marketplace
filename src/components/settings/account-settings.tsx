@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { deleteAccount, type DeleteState } from "@/components/settings/actions";
-import { Button } from "@/components/ui/button";
+import { Button, buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 
@@ -19,8 +19,8 @@ export function AccountSettings({ email }: { email: string }) {
             Download everything Reverse stores about you as JSON (GDPR Art. 20).
           </p>
         </div>
-        <a href="/api/me/export" download>
-          <Button variant="outline" size="sm">Download my data</Button>
+        <a href="/api/me/export" download className={buttonStyles({ variant: "outline", size: "sm" })}>
+          Download my data
         </a>
       </Card>
 

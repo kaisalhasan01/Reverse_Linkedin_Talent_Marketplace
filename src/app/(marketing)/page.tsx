@@ -153,7 +153,7 @@ function ProductPreview() {
       {/* Profile card */}
       <div className="rounded-2xl border border-black/10 bg-background p-5 shadow-sm dark:border-white/10">
         <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-600 text-sm font-semibold text-white">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-700 text-sm font-semibold text-white">
             AL
           </span>
           <div className="min-w-0">
@@ -172,7 +172,7 @@ function ProductPreview() {
       {/* Incoming offer */}
       <div className="relative -mt-3 ml-6 rounded-2xl border border-emerald-300/60 bg-background p-5 shadow-xl shadow-emerald-900/5 sm:ml-12 dark:border-emerald-500/30 dark:shadow-black/40">
         <div className="flex items-center gap-2 text-xs text-zinc-500">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-600 text-[10px] font-semibold text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-teal-700 text-[10px] font-semibold text-white">
             AT
           </span>
           Acme Technologies sent you an offer

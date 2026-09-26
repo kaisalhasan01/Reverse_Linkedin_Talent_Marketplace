@@ -3,7 +3,7 @@ import { requirePaidAccess } from "@/lib/paid-access";
 import { searchCandidates, type CandidateSearchParams } from "@/lib/search";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonStyles } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/input";
 
@@ -43,7 +43,7 @@ export default async function SearchPage({
           </div>
 
           <details open={moreFiltersActive}>
-            <summary className="cursor-pointer text-sm font-medium text-sky-600 dark:text-sky-400">
+            <summary className="cursor-pointer text-sm font-medium text-sky-700 dark:text-sky-400">
               More filters
             </summary>
             <div className="mt-3 grid gap-3 sm:grid-cols-4">
@@ -94,8 +94,11 @@ export default async function SearchPage({
                 </div>
               </div>
             </div>
-            <Link href={`/company/candidates/${p.id}`} className="shrink-0">
-              <Button variant="outline" size="sm">View profile</Button>
+            <Link
+              href={`/company/candidates/${p.id}`}
+              className={buttonStyles({ variant: "outline", size: "sm", className: "shrink-0" })}
+            >
+              View profile
             </Link>
           </Card>
         ))}

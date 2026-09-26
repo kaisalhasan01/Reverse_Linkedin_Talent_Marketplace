@@ -39,7 +39,7 @@ export function PostCard({ post }: { post: FeedPost }) {
             type="submit"
             className={cn(
               "text-sm transition-colors",
-              post.likedByMe ? "font-semibold text-sky-600 dark:text-sky-400" : "text-zinc-500 hover:text-foreground",
+              post.likedByMe ? "font-semibold text-sky-700 dark:text-sky-400" : "text-zinc-500 hover:text-foreground",
             )}
           >
             ▲ {post.likeCount > 0 ? post.likeCount : ""} Like{post.likedByMe ? "d" : ""}
