@@ -32,7 +32,13 @@ export default async function CandidateLayout({ children }: { children: ReactNod
             settingsHref="/candidate/settings"
             badge={
               <Badge tone={looking ? "green" : "neutral"}>
-                {looking ? "Looking for work" : "Employed"}
+                {looking ? (
+                  <>
+                    Looking<span className="hidden sm:inline">&nbsp;for work</span>
+                  </>
+                ) : (
+                  "Employed"
+                )}
               </Badge>
             }
           />

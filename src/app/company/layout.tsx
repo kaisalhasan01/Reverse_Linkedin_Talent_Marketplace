@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 
 const companyNav: NavItem[] = [
   { href: "/company/dashboard", label: "Dashboard" },
-  { href: "/company/search", label: "Search candidates" },
+  { href: "/company/search", label: "Search candidates", short: "Search" },
   { href: "/company/messages", label: "Messages" },
   { href: "/company/billing", label: "Billing" },
 ];
@@ -31,7 +31,7 @@ export default async function CompanyLayout({ children }: { children: ReactNode 
     <div className="flex min-h-full flex-col">
       <TopNav
         brandHref="/company/dashboard"
-        brandLabel="Reverse for Recruiters"
+        brandSuffix="for Recruiters"
         items={companyNav}
         actions={
           <UserMenu
