@@ -1,0 +1,262 @@
+// Reverse — talent marketplace schema.
+// Postgres in all environments: local dev runs embedded Postgres (`npm run db:dev`),
+// production points DATABASE_URL at Supabase. Same schema either way.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Accounts ----------
+
+enum Role {
+  CANDIDATE
+  COMPANY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  candidateProfile CandidateProfile?
+  company          Company?
+
+  posts    Post[]
+  likes    Like[]
+  comments Comment[]
+
+  sentConnections     Connection[] @relation("ConnectionRequester")
+  receivedConnections Connection[] @relation("ConnectionAddressee")
+
+  conversations ConversationParticipant[]
+  messages      Message[]
+
+  importDraft ImportDraft?
+}
+
+/// A parsed-but-not-yet-approved CV import. One per user; the candidate
+/// reviews and applies (or discards) it — nothing touches the profile
+/// until they approve. GDPR: deleted on apply, discard, or account deletion.
+model ImportDraft {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payload   Json
+  createdAt DateTime @default(now())
+}
+
+/// Fixed-window counters for rate limiting (sign-in, sign-up, outreach).
+/// In Postgres rather than memory so limits hold across serverless instances.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
+
+// ---------- Candidate side ----------
+
+enum WorkStatus {
+  LOOKING
+  EMPLOYED
+}
+
+model CandidateProfile {
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline     String     @default("")
+  bio          String     @default("")
+  location     String     @default("")
+  skills       String[]   @default([])
+  status       WorkStatus @default(LOOKING)
+  openToRemote Boolean    @default(true)
+  updatedAt    DateTime   @updatedAt
+
+  experiences    Experience[]
+  educations     Education[]
+  projects       Project[]
+  certifications Certification[]
+
+  @@index([status])
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  profileId   String
+  profile     CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title       String
+  company     String
+  startDate   DateTime
+  endDate     DateTime? // null = current position
+  description String    @default("")
+}
+
+model Education {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  school    String
+  degree    String
+  field     String
+  startYear Int
+  endYear   Int? // null = ongoing
+}
+
+model Project {
+  id          String  @id @default(cuid())
+  profileId   String
+  profile     CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name        String
+  description String  @default("")
+  url         String?
+}
+
+model Certification {
+  id        String @id @default(cuid())
+  profileId String
+  profile   CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name      String
+  issuer    String
+  year      Int
+}
+
+// ---------- Company side ----------
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  CANCELED
+}
+
+model Company {
+  id                 String             @id @default(cuid())
+  ownerId            String             @unique
+  owner              User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name               String
+  website            String?
+  about              String             @default("")
+  subscriptionStatus SubscriptionStatus @default(TRIALING)
+  /// Search and outreach are open while ACTIVE, or TRIALING until this date.
+  trialEndsAt        DateTime?
+  seats              Int                @default(1)
+  stripeCustomerId   String? // wired up when Stripe lands
+  createdAt          DateTime           @default(now())
+}
+
+// ---------- Social graph ----------
+
+enum ConnectionStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Connection {
+  id          String           @id @default(cuid())
+  requesterId String
+  requester   User             @relation("ConnectionRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addresseeId String
+  addressee   User             @relation("ConnectionAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  status      ConnectionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime  @default(now())
+  likes     Like[]
+  comments  Comment[]
+
+  @@index([createdAt])
+}
+
+model Like {
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+}
+
+// ---------- Messaging & offers ----------
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  createdAt      DateTime     @default(now())
+  offer          JobOffer?
+
+  @@index([conversationId, createdAt])
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/// A structured job offer attached to a message — the core "companies reach
+/// out with real terms" feature (salary, role, hours up front). The
+/// candidate answers it once: ACCEPTED or DECLINED.
+model JobOffer {
+  id           String      @id @default(cuid())
+  messageId    String      @unique
+  message      Message     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  title        String
+  salaryMin    Int?
+  salaryMax    Int?
+  currency     String      @default("SEK")
+  hoursPerWeek Int?
+  location     String      @default("")
+  status       OfferStatus @default(PENDING)
+  respondedAt  DateTime?
+}

@@ -32,12 +32,20 @@ architecture, PC setup, known weaknesses and next steps. It replaces the old con
   `npx prisma generate`, start `db`, `npx prisma migrate deploy`, `npm run db:seed`.
 - Demo logins, password `Passw0rd!`: `anna@demo.se` (candidate), `talent@acme.se` (company).
 - `npm run db:seed` **wipes all data** — never against production.
-- Verify with `npm run build` and a preview screenshot before claiming anything works.
+- Verify with `npm run lint`, `npm test` (unit + integration; starts its own throwaway
+  Postgres), `npm run build` and `npm run test:e2e` (Playwright against `next start`),
+  plus a preview screenshot, before claiming anything works. CI runs all of it on every PR.
+- Demo company with an ended trial (paywall): `talent@oldtown.example`.
 
-## State (2026-09-26)
+## State (2026-09-26, evening)
 MVP + Wave 2 done: auth, candidate app, company app, full-text search with lawful filters,
-offers, feed, GDPR export/delete, CV import. **Next:** Stripe + paid-access gating, hardening
-(rate limits, email verification, password reset), deploy (Vercel + Supabase EU).
+offers, feed, GDPR export/delete, CV import. A hardening pass (see `SESSION-LOG.md`) added:
+tests + CI, security upgrades (Next 16.3, next-auth beta.32), `trustHost` (sign-in was broken
+under `next start`), candidates accepting/declining offers, **paid access** (14-day trial via
+`Company.trialEndsAt`; `src/lib/billing.ts` + `paid-access.ts`), and Postgres-backed **rate
+limiting** (`src/lib/rate-limit.ts`). Zod schemas for actions live in `src/lib/validation.ts`.
+**Next:** Stripe checkout + webhooks (only needs to set `subscriptionStatus`), email
+verification + password reset, deploy (Vercel + Supabase EU).
 
 ## Working with Kais
 Chat in **Swedish**; code/comments/commits in English. Narrate what you do and why

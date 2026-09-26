@@ -8,6 +8,13 @@
 > project. After that, `AGENTS.md` is the short version loaded every session.
 > Talk to Kais in **Swedish**; code, comments and commits in **English**.
 
+> **Update — 2026-09-26 evening (cloud session):** the full source is on GitHub
+> (`kaisalhasan01/Reverse_Linkedin_Talent_Marketplace`) and a hardening pass is in PR #1 —
+> see `SESSION-LOG.md` for every change. From §8 below, items **1** (paid access now enforced
+> with a 14-day trial — Stripe itself still to do), **2** (rate limiting), **8** (offers can be
+> accepted/declined), **11** (tests + CI) and **14** (dead code) are resolved. New finding:
+> sign-in was broken under `next start` (Auth.js `UntrustedHost`) — fixed with `trustHost`.
+
 ---
 
 ## 1. TL;DR
