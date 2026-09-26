@@ -1,5 +1,5 @@
 // Reverse — talent marketplace schema.
-// Postgres in all environments: local dev runs on `prisma dev` (Prisma Postgres),
+// Postgres in all environments: local dev runs embedded Postgres (`npm run db:dev`),
 // production points DATABASE_URL at Supabase. Same schema either way.
 
 generator client {
