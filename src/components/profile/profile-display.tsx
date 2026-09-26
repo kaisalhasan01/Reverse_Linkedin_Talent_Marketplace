@@ -4,6 +4,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { monthYear } from "@/lib/format";
+import { isHttpUrl } from "@/lib/validation";
 
 /** Profile with everything loaded — matches the include below via Prisma's generated types. */
 export type FullProfile = Prisma.CandidateProfileGetPayload<{
@@ -118,7 +119,7 @@ export function ProfileDisplay({
             key={p.id}
             title={p.name}
             meta={p.url ?? undefined}
-            metaHref={p.url ?? undefined}
+            metaHref={isHttpUrl(p.url) ? p.url : undefined}
             body={p.description}
             action={itemAction?.("project", p.id)}
           />

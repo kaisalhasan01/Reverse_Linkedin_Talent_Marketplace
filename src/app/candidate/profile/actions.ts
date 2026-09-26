@@ -1,9 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/session";
+import {
+  basicsSchema,
+  certificationSchema,
+  educationSchema,
+  experienceSchema,
+  projectSchema,
+} from "@/lib/validation";
 
 const PROFILE_PATH = "/candidate/profile";
 
@@ -18,13 +24,6 @@ async function myProfileId() {
 }
 
 // ---------- Basics & status ----------
-
-const basicsSchema = z.object({
-  headline: z.string().trim().max(120),
-  location: z.string().trim().max(80),
-  bio: z.string().trim().max(2000),
-  skills: z.string().trim().max(500),
-});
 
 export async function updateBasics(formData: FormData) {
   const profileId = await myProfileId();
@@ -65,14 +64,6 @@ export async function toggleStatus() {
 
 // ---------- Experience ----------
 
-const experienceSchema = z.object({
-  title: z.string().trim().min(1).max(100),
-  company: z.string().trim().min(1).max(100),
-  startDate: z.string().min(1),
-  endDate: z.string().optional(),
-  description: z.string().trim().max(1000).optional(),
-});
-
 export async function addExperience(formData: FormData) {
   const profileId = await myProfileId();
   const parsed = experienceSchema.safeParse(Object.fromEntries(formData));
@@ -100,14 +91,6 @@ export async function deleteExperience(id: string) {
 
 // ---------- Education ----------
 
-const educationSchema = z.object({
-  school: z.string().trim().min(1).max(120),
-  degree: z.string().trim().min(1).max(80),
-  field: z.string().trim().min(1).max(120),
-  startYear: z.coerce.number().int().min(1950).max(2100),
-  endYear: z.union([z.coerce.number().int().min(1950).max(2100), z.literal("")]).optional(),
-});
-
 export async function addEducation(formData: FormData) {
   const profileId = await myProfileId();
   const parsed = educationSchema.safeParse(Object.fromEntries(formData));
@@ -134,12 +117,6 @@ export async function deleteEducation(id: string) {
 
 // ---------- Projects ----------
 
-const projectSchema = z.object({
-  name: z.string().trim().min(1).max(100),
-  description: z.string().trim().max(1000).optional(),
-  url: z.union([z.url(), z.literal("")]).optional(),
-});
-
 export async function addProject(formData: FormData) {
   const profileId = await myProfileId();
   const parsed = projectSchema.safeParse(Object.fromEntries(formData));
@@ -163,12 +140,6 @@ export async function deleteProject(id: string) {
 }
 
 // ---------- Certifications ----------
-
-const certificationSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  issuer: z.string().trim().min(1).max(120),
-  year: z.coerce.number().int().min(1950).max(2100),
-});
 
 export async function addCertification(formData: FormData) {
   const profileId = await myProfileId();

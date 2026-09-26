@@ -10,6 +10,13 @@ export async function sendConnectionRequest(addresseeId: string) {
   const user = await requireCandidate();
   if (addresseeId === user.id) return;
 
+  // Connections are candidate ↔ candidate only; a forged id matches nothing.
+  const addressee = await prisma.user.findFirst({
+    where: { id: addresseeId, role: "CANDIDATE" },
+    select: { id: true },
+  });
+  if (!addressee) return;
+
   // No duplicates in either direction.
   const existing = await prisma.connection.findFirst({
     where: {
