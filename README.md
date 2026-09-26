@@ -5,6 +5,14 @@ profile for free and companies pay to reach them**. Flip your status to
 *Looking for work* and recruiters come to you — with salary, role and hours up
 front.
 
+![Landing page](docs/screenshots/landing.png)
+
+| Company search | Structured offer (candidate view) |
+| --- | --- |
+| ![Company search](docs/screenshots/company-search.png) | ![Offer card with Accept/Decline](docs/screenshots/candidate-offer.png) |
+| **Company dashboard (dark mode)** | **Phone** |
+| ![Dashboard in dark mode](docs/screenshots/company-dashboard-dark.png) | <img src="docs/screenshots/mobile-feed.png" alt="Feed on a phone" width="260"> |
+
 ## Features
 
 **For candidates (free)**
@@ -13,6 +21,7 @@ front.
   (or a local heuristic without an API key) → candidate reviews and approves before
   anything is saved
 - *Looking for work / Employed* toggle — employed users are invisible to companies
+- **Answer offers**: accept or decline a company's structured offer with one click
 - Social layer: feed with posts, likes and comments; connection requests with
   **mutual-connections** social proof; direct messages
 
@@ -25,43 +34,86 @@ front.
   (diskrimineringslagen 2008:567 + GDPR data minimisation)
 - Candidate detail view + direct outreach with **structured job offers**
   (title, salary range, hours/week, location) rendered as offer cards in the thread
-- Dashboard with live market stats; billing page with subscription state (Stripe-ready)
+- **14-day free trial, then paid access**: search, candidate profiles and new
+  outreach are enforced server-side; existing conversations stay open
+- Dashboard with live market stats (incl. accepted offers); billing page with
+  trial/subscription state (Stripe-ready)
 
-**GDPR**
+**Security & GDPR**
+- Authorization in the data layer; **rate limiting** on sign-in (per account and per
+  network), sign-up and outreach, stored in Postgres so it holds on serverless
 - `/privacy` policy that maps 1:1 to actual behavior; single essential cookie (no banner needed)
-- Data export as JSON (Art. 20) and account deletion with full cascade (Art. 17) from Settings
+- Data export as JSON (Art. 15/20 — profile, posts, connections, **all conversations
+  and offers**, pending CV draft) and account deletion with full cascade (Art. 17)
 
 ## Tech stack
 
-| Layer      | Choice                                                        |
-| ---------- | ------------------------------------------------------------- |
-| Framework  | Next.js 16 (App Router, Server Components, Server Actions)    |
+| Layer      | Choice                                                         |
+| ---------- | -------------------------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Server Components, Server Actions)     |
 | Language   | TypeScript end to end                                          |
-| Database   | PostgreSQL — embedded locally, Supabase in production          |
-| ORM        | Prisma (migrations, typed queries, raw SQL for FTS)           |
-| Auth       | Auth.js v5 (credentials + bcrypt, JWT sessions with role)     |
-| Styling    | Tailwind CSS v4, hand-rolled component kit                    |
-| Validation | Zod on every server action                                    |
-| Payments   | Stripe (planned — data model in place)                        |
+| Database   | PostgreSQL — embedded locally, Supabase in production           |
+| ORM        | Prisma (migrations, typed queries, raw SQL for FTS)            |
+| Auth       | Auth.js v5 (credentials + bcrypt, JWT sessions with role)      |
+| Styling    | Tailwind CSS v4, hand-rolled component kit, dark mode          |
+| Validation | Zod on every server action (`src/lib/validation.ts`)           |
+| Testing    | Vitest — unit + integration against a throwaway real Postgres  |
+| CI         | GitHub Actions: lint, typecheck, tests, build on every PR      |
+| Payments   | Stripe (planned — trial/paid access already enforced)          |
 
 ## Getting started
 
+> Working in Claude Code? Start the servers with `preview_start` from
+> `.claude/launch.json` — **`db` first, then `web`** — instead of the terminal steps below.
+
+Needs Node.js 24 (22.12+ works). One-time setup:
+
 ```bash
 npm install
-cp .env.example .env         # then set AUTH_SECRET (openssl rand -base64 33)
+cp .env.example .env
+```
 
-npm run db:dev               # terminal 1 — local Postgres (no Docker/install needed)
-npx prisma migrate dev       # terminal 2 — create schema
-npm run db:seed              #             demo data
-npm run dev                  #             app on http://localhost:3000
+Set `AUTH_SECRET` in `.env` to the output of:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(33).toString('base64'))"
+```
+
+Start the local database and **leave it running** (Postgres on port 5433, data in `.pgdata/`):
+
+```bash
+npm run db:dev
+```
+
+Then, in a **second** terminal:
+
+```bash
+npx prisma migrate deploy
+npm run db:seed
+npm run dev
 ```
 
 **Demo logins** (password `Passw0rd!`):
 
-| Role      | Email             |
-| --------- | ----------------- |
-| Candidate | `anna@demo.se`    |
-| Company   | `talent@acme.se`  |
+| Role      | Email              | Notes                              |
+| --------- | ------------------ | ---------------------------------- |
+| Candidate | `anna@demo.se`     | has a pending offer from Acme      |
+| Company   | `talent@acme.se`   | 10 days left of the free trial     |
+| Company   | `hr@nordicsoft.se` | active subscription                |
+
+`npm run db:seed` **wipes all data** first — never run it against production.
+
+## Testing
+
+```bash
+npm test          # unit + integration (starts its own Postgres — nothing needs to run)
+npm run lint
+npx tsc --noEmit
+```
+
+The integration tests start a throwaway embedded Postgres on a free port, apply the
+migrations and the demo seed, and exercise the data layer and server actions directly —
+including the core promise that **EMPLOYED candidates never come back from search**.
 
 ## Scripts
 
@@ -69,9 +121,10 @@ npm run dev                  #             app on http://localhost:3000
 | -------------------- | --------------------------------------------- |
 | `npm run dev`        | Next.js dev server                            |
 | `npm run db:dev`     | Local Postgres (embedded, data in `.pgdata/`) |
-| `npm run db:migrate` | Prisma migrations                             |
+| `npm run db:migrate` | Create/apply Prisma migrations (dev)          |
 | `npm run db:seed`    | Reset + seed demo data                        |
 | `npm run db:studio`  | Prisma Studio (DB GUI)                        |
+| `npm test`           | Vitest: unit + integration tests              |
 | `npm run build`      | Production build                              |
 
 ## Architecture notes
@@ -82,12 +135,18 @@ npm run dev                  #             app on http://localhost:3000
   collapse to the same URL.
 - **Authorization in the data layer:** every server action re-checks the session,
   and ownership/participation is part of the query itself (`deleteMany({ id, profileId })`,
-  participant checks in `lib/messaging.ts`) — not just the UI.
+  participant checks in `lib/messaging.ts`, "only the recipient answers an offer, once")
+  — not just the UI.
 - **Search** (`lib/search.ts`): one composable SQL fragment defines the searchable
   document, used for both matching and ranking so they can't drift apart.
   `websearch_to_tsquery` gives Google-style syntax (`react "design systems" -java`).
-- **Employed = hidden** is enforced in the search SQL and again on the candidate
-  detail page — not something the UI merely hides.
+- **Employed = hidden** is enforced in the search SQL and in the candidate detail
+  query — a hidden profile renders exactly like a missing one.
+- **Paid access** (`lib/billing.ts` policy, `lib/paid-access.ts` guards): ACTIVE, or
+  TRIALING until `trialEndsAt`; everything else fails closed. Stripe only has to set
+  `subscriptionStatus`.
+- **Rate limiting** (`lib/rate-limit.ts`): fixed windows in a Postgres table, one
+  atomic upsert per hit; successful sign-ins give their attempt back.
 
 ## Roadmap
 
@@ -98,5 +157,8 @@ npm run dev                  #             app on http://localhost:3000
 - [x] Phase 5 — messaging & structured offers
 - [x] Phase 6 — social feed
 - [x] Wave 2 — advanced filters, mutual connections, GDPR package, CV import
-- [ ] Stripe subscriptions (checkout + webhooks + gating)
-- [ ] Deploy: Vercel + Supabase
+- [x] Hardening — tests + CI, rate limiting, paid-access gating, offer responses
+- [ ] Stripe subscriptions (checkout + webhooks → `subscriptionStatus`)
+- [ ] Email verification + password reset
+- [ ] Search index (`tsvector` column + GIN), pagination, unread badges
+- [ ] Deploy: Vercel + Supabase (EU)
