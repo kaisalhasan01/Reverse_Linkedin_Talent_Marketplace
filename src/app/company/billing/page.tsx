@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/db";
-import { requireCompany } from "@/lib/session";
+import { LOCKED_REASON } from "@/lib/billing";
+import { currentCompany } from "@/lib/paid-access";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,16 +27,32 @@ const plans = [
   },
 ];
 
-const statusCopy = {
-  TRIALING: { tone: "amber" as const, label: "Trial", text: "You're on a free trial with full access." },
-  ACTIVE: { tone: "green" as const, label: "Active", text: "Your subscription is active." },
-  CANCELED: { tone: "neutral" as const, label: "Canceled", text: "Your subscription has ended." },
-};
+const longDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
-export default async function BillingPage() {
-  const user = await requireCompany();
-  const company = await prisma.company.findUniqueOrThrow({ where: { ownerId: user.id } });
-  const status = statusCopy[company.subscriptionStatus];
+export default async function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ locked?: string }>;
+}) {
+  const { company, access } = await currentCompany();
+  const { locked } = await searchParams;
+
+  const status = access.allowed
+    ? access.trialDaysLeft === null
+      ? { tone: "green" as const, label: "Active", text: "Your subscription is active." }
+      : {
+          tone: "amber" as const,
+          label: "Trial",
+          text: `Free trial with full access — ${access.trialDaysLeft} day${access.trialDaysLeft === 1 ? "" : "s"} left (ends ${longDate(company.trialEndsAt!)}).`,
+        }
+    : {
+        tone: "neutral" as const,
+        label: access.reason === "canceled" ? "Canceled" : "Trial ended",
+        text:
+          access.reason === "trial_ended" && company.trialEndsAt
+            ? `Your free trial ended on ${longDate(company.trialEndsAt)}. Search and outreach are paused.`
+            : "Search and outreach are paused.",
+      };
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-8">
@@ -44,6 +60,16 @@ export default async function BillingPage() {
         <h1 className="text-xl font-semibold tracking-tight">Billing</h1>
         <p className="mt-1 text-sm text-zinc-500">Manage your plan and seats.</p>
       </div>
+
+      {locked && !access.allowed ? (
+        <div
+          role="status"
+          className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200"
+        >
+          <span className="font-semibold">{LOCKED_REASON[access.reason]}.</span> Candidate search, profiles
+          and new outreach need an active plan. Your existing conversations stay open.
+        </div>
+      ) : null}
 
       <Card className="flex flex-wrap items-center justify-between gap-4">
         <div>

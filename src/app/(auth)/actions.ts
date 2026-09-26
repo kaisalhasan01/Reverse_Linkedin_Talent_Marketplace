@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { signIn, signOut } from "@/lib/auth";
 import { ROLE_HOME } from "@/lib/roles";
+import { trialEndDate } from "@/lib/billing";
 
 export type AuthFormState = { error?: string };
 
@@ -40,7 +41,7 @@ export async function register(_prev: AuthFormState, formData: FormData): Promis
       // Each role gets its counterpart record from day one.
       ...(role === "CANDIDATE"
         ? { candidateProfile: { create: {} } }
-        : { company: { create: { name: companyName! } } }),
+        : { company: { create: { name: companyName!, trialEndsAt: trialEndDate() } } }),
     },
   });
 

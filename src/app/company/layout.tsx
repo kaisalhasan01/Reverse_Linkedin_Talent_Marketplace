@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { TopNav, type NavItem } from "@/components/shared/top-nav";
 import { UserMenu } from "@/components/shared/user-menu";
 import { Badge } from "@/components/ui/badge";
+import { companyAccess } from "@/lib/billing";
 
 const companyNav: NavItem[] = [
   { href: "/company/dashboard", label: "Dashboard" },
@@ -12,20 +13,20 @@ const companyNav: NavItem[] = [
   { href: "/company/billing", label: "Billing" },
 ];
 
-const subscriptionBadge = {
-  TRIALING: { tone: "amber" as const, label: "Trial" },
-  ACTIVE: { tone: "green" as const, label: "Active plan" },
-  CANCELED: { tone: "neutral" as const, label: "Canceled" },
-};
 
 /** Shell + auth guard for the company app: must be a signed-in COMPANY user. */
 export default async function CompanyLayout({ children }: { children: ReactNode }) {
   const user = await requireCompany();
   const company = await prisma.company.findUnique({
     where: { ownerId: user.id },
-    select: { name: true, subscriptionStatus: true },
+    select: { name: true, subscriptionStatus: true, trialEndsAt: true },
   });
-  const badge = subscriptionBadge[company?.subscriptionStatus ?? "TRIALING"];
+  const access = company ? companyAccess(company) : null;
+  const badge = !access?.allowed
+    ? { tone: "neutral" as const, label: access?.reason === "canceled" ? "Canceled" : "Trial ended" }
+    : access.trialDaysLeft === null
+      ? { tone: "green" as const, label: "Active plan" }
+      : { tone: "amber" as const, label: `Trial · ${access.trialDaysLeft}d left` };
 
   return (
     <div className="flex min-h-full flex-col">

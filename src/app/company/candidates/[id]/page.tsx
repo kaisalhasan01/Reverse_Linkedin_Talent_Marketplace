@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { requireCompany } from "@/lib/session";
+import { requirePaidAccess } from "@/lib/paid-access";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OutreachForm } from "@/components/company/outreach-form";
@@ -12,7 +12,7 @@ export default async function CandidateDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireCompany();
+  await requirePaidAccess();
   const { id } = await params;
 
   // Employed candidates are hidden from companies by design — the status is

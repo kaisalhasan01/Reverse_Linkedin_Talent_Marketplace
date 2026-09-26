@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCompany } from "@/lib/session";
+import { requirePaidAccess } from "@/lib/paid-access";
 import { searchCandidates, type CandidateSearchParams } from "@/lib/search";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,7 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<CandidateSearchParams>;
 }) {
-  await requireCompany();
+  await requirePaidAccess();
   const params = await searchParams;
   const { q, skill, location, university, employer, minYears, remote } = params;
   const hasQuery = Object.values(params).some((v) => v && String(v).trim());

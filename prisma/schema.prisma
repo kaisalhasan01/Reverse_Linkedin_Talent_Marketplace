@@ -136,6 +136,8 @@ model Company {
   website            String?
   about              String             @default("")
   subscriptionStatus SubscriptionStatus @default(TRIALING)
+  /// Search and outreach are open while ACTIVE, or TRIALING until this date.
+  trialEndsAt        DateTime?
   seats              Int                @default(1)
   stripeCustomerId   String? // wired up when Stripe lands
   createdAt          DateTime           @default(now())

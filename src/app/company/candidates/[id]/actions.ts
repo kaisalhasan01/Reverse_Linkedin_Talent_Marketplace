@@ -2,7 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { requireCompany } from "@/lib/session";
+import { LOCKED_REASON } from "@/lib/billing";
+import { currentCompany } from "@/lib/paid-access";
 import { createMessage, getOrCreateConversation } from "@/lib/messaging";
 import { outreachSchema } from "@/lib/validation";
 
@@ -18,10 +19,17 @@ export async function startOutreach(
   _prev: OutreachState,
   formData: FormData,
 ): Promise<OutreachState> {
-  const user = await requireCompany();
+  const { user, access } = await currentCompany();
   const values: Record<string, string> = {};
   for (const [key, value] of formData) {
     if (typeof value === "string" && !key.startsWith("$")) values[key] = value; // skip React's $ACTION_* fields
+  }
+
+  if (!access.allowed) {
+    return {
+      error: `${LOCKED_REASON[access.reason]} — choose a plan on the Billing page to contact candidates.`,
+      values,
+    };
   }
 
   // Only candidates who are actively looking can be contacted.

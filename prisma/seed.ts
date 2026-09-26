@@ -253,6 +253,7 @@ async function main() {
           website: "https://acme.example",
           about: "Product company building logistics software for the Nordics. 120 people, Stockholm HQ.",
           subscriptionStatus: SubscriptionStatus.TRIALING,
+          trialEndsAt: new Date(Date.now() + 10 * 24 * 3600 * 1000),
           seats: 2,
         },
       },
