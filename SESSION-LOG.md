@@ -26,6 +26,9 @@
   - Komplett GDPR-export.
   - Sju mindre buggar.
   - Testsvit och CI.
+  - **Ny landningssida** med produktförhandsvisning.
+  - **Godkänd tillgänglighetsgranskning** (axe-core, WCAG 2.1 AA) på alla sidor.
+  - README med skärmdumpar.
 
 ## Vad du behöver göra eller bestämma
 
@@ -76,6 +79,9 @@ Tre nya migrationer följer med. Seeden återställer demodatan.
 | `0085bcc` | **GDPR-export v2** | Innehåller nu mottagna meddelanden och erbjudanden plus CV-utkastet ("everything we store about you") |
 | `f8f8b46` | Städning av död kod | `src/types/index.ts`, `pg`, fem oanvända SVG-filer och en inaktuell schema-kommentar (HANDOFF §8 punkt 14) |
 | `3b270bb` | **Svar på erbjudanden** | `JobOffer.status` och `respondedAt` (migration). Bara mottagaren kan svara, och bara en gång. Svaret postas i tråden. Dashboarden visar "N accepted". Dessutom var erbjudandekortet **grågrönt och svårläst** i avsändarens bubbla, både i ljust och mörkt läge. Nu är det ogenomskinligt |
+| `8ca4808` | **Ny landningssida** | Hero med produktförhandsvisning (profil med "Looking for work" och ett inkommande erbjudande), "How it works" i tre steg, målgruppskort och en compliance-remsa som gör reglerna till säljargument. All text motsvarar funktioner som faktiskt finns. Mobil: en grid-bugg klippte texten på 390 px, hittad genom att mäta elementens bredd |
+| `6a93a56` | **Dokumentation** | README med skärmdumpar, nya features, en testsektion och ett "Getting started" som inte kan kopieras fel (ett kodblock per terminal, utan `# terminal 1`-kommentarerna som orsakade incidenten). AGENTS.md (laddas i varje session) och en statusruta i HANDOFF är uppdaterade |
+| `c4539f6` | **Tillgänglighet** | axe-core på alla 15 sidor, ljust och mörkt. Förut: 2 feltyper, efter: **0**. Gråtext under WCAG-gränsen (2,6:1 och 4,1:1) justerades centralt per färgschema med uträknade värden. Avatarfärgerna var 3,2–4,0:1 och är nu 5,0–6,1:1. Länkfärger justerades. `<h1>` saknades på tre sidor. Knappar låg inuti länkar (ogiltig HTML). Registreringens rollval saknade synlig fokusram |
 | `4419c3c` | **Rate limiting** (Postgres-baserad) | Inloggning: 10 misslyckade försök per konto och 30 per nätverk per 15 min. Lyckade inloggningar räknas inte. Registrering: 5 per nätverk per timme. Kontaktförsök: 50 per företag per dygn. Räknarna ligger i Postgres, så de gäller även på Vercel där varje anrop kan hamna på en ny instans. Atomiskt: 20 parallella försök mot gränsen 5 släpper igenom exakt 5 |
 | `4e4edc3` | **Betalvägg med provperiod** | `Company.trialEndsAt` (migration med backfill). Sök, profiler och kontakt spärras på servern när provperioden tagit slut. Dashboarden gömmer kandidatnamn när företaget är spärrat. Märket visar "Trial · 10d left" |
 
@@ -90,6 +96,7 @@ Tre nya migrationer följer med. Seeden återställer demodatan.
 | Playwright: svar på erbjudande | 4/4: Anna accepterar → kortet visar Accepted → företaget ser det → dashboarden räknar |
 | Playwright: betalväggen | 8/8: märket visar dagar kvar → provperioden går ut → dashboarden gömmer namn, sök och profil skickar till Billing, inkorgen är öppen |
 | Playwright: brute force | Försök 10 ger "Invalid email or password", försök 11 ger **"Too many sign-in attempts. Try again in 15 minutes."** |
+| axe-core (WCAG 2.1 A/AA + best practices), 15 sidor × ljust/mörkt | Förut 2 feltyper (kontrast, saknad `<h1>`), efter **0** |
 | Playwright: mobil 390 px | Sign out syns, ingen horisontell scroll (båda rollerna) |
 | GitHub Actions CI | **Grön** på alla pushar. De två "cancelled" byttes ut av nyare pushar |
 
@@ -106,6 +113,7 @@ Tre nya migrationer följer med. Seeden återställer demodatan.
 6. **Profilformulären ignorerar ogiltig input tyst,** till exempel slutdatum före startdatum. Servern stoppar det nu, men användaren får ingen förklaring. Samma mönster som erbjudandeformuläret (`useActionState`) löser det.
 7. **Paginering** i flödet (50), sökningen (30) och kontakter (laddar alla).
 8. **Villkorssida** (terms of service) och riktig kontakt i privacy-policyn.
+9. **E2E-tester i repot:** Playwright-skripten jag körde i molnet (smoke, erbjudanden, betalvägg, brute force, mobil) kan bli `e2e/*.spec.ts` och köras i CI mot `next start`. Det hade fångat inloggningsbuggen direkt.
 
 ## Ärliga brasklappar
 

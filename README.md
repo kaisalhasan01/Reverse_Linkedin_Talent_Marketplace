@@ -13,6 +13,8 @@ front.
 | **Company dashboard (dark mode)** | **Phone** |
 | ![Dashboard in dark mode](docs/screenshots/company-dashboard-dark.png) | <img src="docs/screenshots/mobile-feed.png" alt="Feed on a phone" width="260"> |
 
+![Candidate profile with the outreach panel](docs/screenshots/company-candidate.png)
+
 ## Features
 
 **For candidates (free)**
@@ -39,7 +41,8 @@ front.
 - Dashboard with live market stats (incl. accepted offers); billing page with
   trial/subscription state (Stripe-ready)
 
-**Security & GDPR**
+**Security, accessibility & GDPR**
+- Passes an axe-core audit (WCAG 2.1 AA) on every page, light and dark mode
 - Authorization in the data layer; **rate limiting** on sign-in (per account and per
   network), sign-up and outreach, stored in Postgres so it holds on serverless
 - `/privacy` policy that maps 1:1 to actual behavior; single essential cookie (no banner needed)
