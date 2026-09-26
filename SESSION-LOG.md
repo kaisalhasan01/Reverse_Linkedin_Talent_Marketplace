@@ -11,15 +11,16 @@
 ## TL;DR — 30 sekunder
 
 - **Appen körs och är verifierad**, både i dev och i produktionsläge (`next start`), med skärmdumpar,
-  Playwright-flöden, **70 automatiska tester** och **grön CI** på varje push.
+  Playwright-flöden, **77 automatiska tester** och **grön CI** på varje push.
 - **Fyra buggar av typen "måste fixas före lansering"** hittades och fixades:
   1. **Inloggningen var trasig i produktionsläge.** Alla blev utloggade direkt efter inloggning.
   2. **3 kritiska säkerhetshål** i Next.js och Auth.js. Paketen är uppgraderade.
   3. **Företag kunde posta, gilla och kommentera i kandidatflödet** genom att anropa servern direkt.
   4. **En dold (Employed) profil avslöjade statusbytet** för företag som hade länken.
-- **Två nya features:**
+- **Tre nya features:**
   - **Kandidater kan svara på jobberbjudanden** (Accept/Decline).
   - **Betalväggen är nu på riktigt**: 14 dagars provperiod, sedan spärras sök och kontakt på servern.
+  - **Rate limiting**: skydd mot brute force på inloggning och mot spam.
 - **Förbättrat:**
   - Mobilnavigeringen (förut gick det inte att logga ut på mobilen).
   - Komplett GDPR-export.
@@ -39,12 +40,12 @@
 ## Så här testar du själv (efter `git pull` på PC:n)
 
 Be Claude Code på PC:n: *"Kör `npm install`, `npx prisma migrate deploy`, `npm run db:seed` och starta db + web."*
-Två nya migrationer följer med. Seeden återställer demodatan.
+Tre nya migrationer följer med. Seeden återställer demodatan.
 
 - **Kandidat** `anna@demo.se` / `Passw0rd!` → *Messages* → Acmes erbjudande → **Accept offer**
 - **Företag** `talent@acme.se` → märket visar **"Trial · 10d left"** → *Dashboard* visar "1 accepted" efter att Anna accepterat
 - **Mobil:** öppna appen i telefonläge (F12 → enhetsläge). Allt får plats.
-- `npm test` kör alla 70 tester (startar en egen databas, cirka 5 s)
+- `npm test` kör alla 77 tester (startar en egen databas, cirka 5 s)
 
 ## Tidslinje — vad jag gjorde, i ordning
 
@@ -75,6 +76,7 @@ Två nya migrationer följer med. Seeden återställer demodatan.
 | `0085bcc` | **GDPR-export v2** | Innehåller nu mottagna meddelanden och erbjudanden plus CV-utkastet ("everything we store about you") |
 | `f8f8b46` | Städning av död kod | `src/types/index.ts`, `pg`, fem oanvända SVG-filer och en inaktuell schema-kommentar (HANDOFF §8 punkt 14) |
 | `3b270bb` | **Svar på erbjudanden** | `JobOffer.status` och `respondedAt` (migration). Bara mottagaren kan svara, och bara en gång. Svaret postas i tråden. Dashboarden visar "N accepted". Dessutom var erbjudandekortet **grågrönt och svårläst** i avsändarens bubbla, både i ljust och mörkt läge. Nu är det ogenomskinligt |
+| `4419c3c` | **Rate limiting** (Postgres-baserad) | Inloggning: 10 misslyckade försök per konto och 30 per nätverk per 15 min. Lyckade inloggningar räknas inte. Registrering: 5 per nätverk per timme. Kontaktförsök: 50 per företag per dygn. Räknarna ligger i Postgres, så de gäller även på Vercel där varje anrop kan hamna på en ny instans. Atomiskt: 20 parallella försök mot gränsen 5 släpper igenom exakt 5 |
 | `4e4edc3` | **Betalvägg med provperiod** | `Company.trialEndsAt` (migration med backfill). Sök, profiler och kontakt spärras på servern när provperioden tagit slut. Dashboarden gömmer kandidatnamn när företaget är spärrat. Märket visar "Trial · 10d left" |
 
 ## Testkörningar
@@ -82,11 +84,12 @@ Två nya migrationer följer med. Seeden återställer demodatan.
 | Vad | Resultat |
 |---|---|
 | `npm run lint` / `npx tsc --noEmit` / `npm run build` | Rent efter varje commit |
-| `npm test` (Vitest): 10 filer, **70 tester** | Alla gröna. Integrationstesterna startar en egen Postgres, migrerar, seedar och kör klart på cirka 5 s |
+| `npm test` (Vitest): 11 filer, **77 tester** | Alla gröna. Integrationstesterna startar en egen Postgres, migrerar, seedar och kör klart på cirka 5 s |
 | Bevis på att testerna testar rätt sak | Jag lade tillfälligt tillbaka gammal kod för flöde, kontaktförfrågningar och export: testerna gick rött. Med fixarna: grönt |
 | Playwright-smoke mot `next start` | **10/10**: inloggning för båda rollerna, rollskydd, ranking, "Employed = hidden", dold profil, felflödet i erbjudandeformuläret |
 | Playwright: svar på erbjudande | 4/4: Anna accepterar → kortet visar Accepted → företaget ser det → dashboarden räknar |
 | Playwright: betalväggen | 8/8: märket visar dagar kvar → provperioden går ut → dashboarden gömmer namn, sök och profil skickar till Billing, inkorgen är öppen |
+| Playwright: brute force | Försök 10 ger "Invalid email or password", försök 11 ger **"Too many sign-in attempts. Try again in 15 minutes."** |
 | Playwright: mobil 390 px | Sign out syns, ingen horisontell scroll (båda rollerna) |
 | GitHub Actions CI | **Grön** på alla pushar. De två "cancelled" byttes ut av nyare pushar |
 
