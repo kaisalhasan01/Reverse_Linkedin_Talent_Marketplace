@@ -99,7 +99,10 @@ Tre nya migrationer följer med. Seeden återställer demodatan.
 2. **Mejlverifiering och lösenordsåterställning.** Kräver en mejlleverantör, till exempel Resend.
 3. **Söket:** en `tsvector`-kolumn med GIN-index. Idag byggs sökdokumentet per rad och fråga, vilket skalar dåligt.
 4. **Olästa meddelanden:** `lastReadAt` per deltagare, och en badge i menyn.
-5. **Modellval för CV-importen:** koden använder `claude-opus-4-8`. Strukturerad extraktion klarar sig troligen med en billigare och snabbare modell. Det spelar roll när varje uppladdning kostar pengar, så testa på 5–10 riktiga CV:n först.
+5. **CV-importens Claude-anrop är verifierat** mot Anthropics API-referens. Modell-id:t `claude-opus-4-8` är giltigt, och structured outputs (`messages.parse` + `zodOutputFormat`) används exakt enligt dokumentationen. Ingen kodändring, men ett **kostnadsbeslut åt dig** (priser per miljon tokens, in/ut):
+   - Nuvarande **Opus 4.8**: $5 / $25. **Opus 5** är nyare, till samma pris.
+   - **Sonnet 5**: $2 / $10. **Haiku 4.5**: $1 / $5.
+   - Rekommenderad ordning enligt dokumentationen: prova först `output_config: { effort: "low" }` på samma modell och mät `response.usage` på 5–10 riktiga CV:n. Byt modell bara om kvaliteten håller. *Uppskattning:* cirka $0,05–0,15 per CV på Opus 4.8, beroende på hur mycket modellen "tänker". Det behöver mätas.
 6. **Profilformulären ignorerar ogiltig input tyst,** till exempel slutdatum före startdatum. Servern stoppar det nu, men användaren får ingen förklaring. Samma mönster som erbjudandeformuläret (`useActionState`) löser det.
 7. **Paginering** i flödet (50), sökningen (30) och kontakter (laddar alla).
 8. **Villkorssida** (terms of service) och riktig kontakt i privacy-policyn.
