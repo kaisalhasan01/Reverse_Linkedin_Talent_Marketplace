@@ -15,6 +15,11 @@ const credentialsSchema = z.object({
  * server actions can authorize without a DB roundtrip.
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Auth.js only trusts the Host header automatically in dev and on Vercel.
+  // Under `next start` or any other host every session read failed with
+  // UntrustedHost, silently signing everyone out. The app always runs behind
+  // a proxy that sets Host (Vercel, or localhost in dev), so trust it.
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/sign-in" },
   providers: [

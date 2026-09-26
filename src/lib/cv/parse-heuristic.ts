@@ -40,7 +40,9 @@ export function parseCvHeuristically(text: string): ParsedCv {
       if (!buckets.has(current)) buckets.set(current, []);
       continue;
     }
-    buckets.get(current)?.push(line) ?? buckets.set(current, [line]);
+    const bucket = buckets.get(current);
+    if (bucket) bucket.push(line);
+    else buckets.set(current, [line]);
   }
 
   // Headline: first short header line that isn't contact info

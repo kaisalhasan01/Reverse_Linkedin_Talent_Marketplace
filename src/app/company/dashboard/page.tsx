@@ -5,11 +5,12 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { daysAgo } from "@/lib/format";
 
 export default async function DashboardPage() {
   const user = await requireCompany();
 
-  const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+  const weekAgo = daysAgo(7);
   const [company, lookingCount, newThisWeek, conversationCount, offersSent, recent] = await Promise.all([
     prisma.company.findUnique({ where: { ownerId: user.id } }),
     prisma.candidateProfile.count({ where: { status: "LOOKING" } }),

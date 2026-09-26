@@ -1,5 +1,10 @@
 /** Tiny date/format helpers shared across the app. */
 
+/** The moment `days` days before now — e.g. the start of a "this week" window. */
+export function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 24 * 3600 * 1000);
+}
+
 export function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
   if (seconds < 60) return "just now";
