@@ -1,5 +1,6 @@
 /**
- * Demo data: 12 candidates (mixed LOOKING/EMPLOYED), 2 companies, a social
+ * Demo data: 12 candidates (mixed LOOKING/EMPLOYED), 3 companies (trial,
+ * active, trial ended), a social
  * graph with posts/likes/comments, and a company→candidate outreach thread
  * with a structured job offer.
  *
@@ -277,6 +278,24 @@ async function main() {
     },
   });
 
+  // A company whose free trial has ended — shows the paywall (demo + e2e tests)
+  await prisma.user.create({
+    data: {
+      email: "talent@oldtown.example",
+      name: "Oldtown Recruiting",
+      passwordHash,
+      role: Role.COMPANY,
+      company: {
+        create: {
+          name: "Oldtown Logistics AB",
+          about: "Freight forwarder in Jönköping. Trial ended — search and outreach are locked.",
+          subscriptionStatus: SubscriptionStatus.TRIALING,
+          trialEndsAt: new Date(Date.now() - 2 * 24 * 3600 * 1000),
+        },
+      },
+    },
+  });
+
   // Social graph: connections around Anna + a few others
   const conn = (a: string, b: string, status: ConnectionStatus) =>
     prisma.connection.create({ data: { requesterId: users[a], addresseeId: users[b], status } });
@@ -381,7 +400,7 @@ async function main() {
   console.log("Seeded:", counts);
   console.log(`\nDemo logins (password: ${PASSWORD})`);
   console.log("  Candidate: anna@demo.se");
-  console.log("  Company:   talent@acme.se");
+  console.log("  Company:   talent@acme.se (trial)  ·  hr@nordicsoft.se (active)  ·  talent@oldtown.example (trial ended)");
 }
 
 main()

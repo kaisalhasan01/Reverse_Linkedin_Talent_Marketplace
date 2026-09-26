@@ -33,8 +33,9 @@ architecture, PC setup, known weaknesses and next steps. It replaces the old con
 - Demo logins, password `Passw0rd!`: `anna@demo.se` (candidate), `talent@acme.se` (company).
 - `npm run db:seed` **wipes all data** — never against production.
 - Verify with `npm run lint`, `npm test` (unit + integration; starts its own throwaway
-  Postgres) and `npm run build`, plus a preview screenshot, before claiming anything works.
-  CI (GitHub Actions) runs the same on every PR.
+  Postgres), `npm run build` and `npm run test:e2e` (Playwright against `next start`),
+  plus a preview screenshot, before claiming anything works. CI runs all of it on every PR.
+- Demo company with an ended trial (paywall): `talent@oldtown.example`.
 
 ## State (2026-09-26, evening)
 MVP + Wave 2 done: auth, candidate app, company app, full-text search with lawful filters,

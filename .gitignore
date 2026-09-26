@@ -43,3 +43,7 @@ next-env.d.ts
 
 # local dev database
 /.pgdata
+
+# Playwright
+/test-results/
+/playwright-report/

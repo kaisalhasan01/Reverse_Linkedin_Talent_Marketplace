@@ -60,8 +60,8 @@ front.
 | Auth       | Auth.js v5 (credentials + bcrypt, JWT sessions with role)      |
 | Styling    | Tailwind CSS v4, hand-rolled component kit, dark mode          |
 | Validation | Zod on every server action (`src/lib/validation.ts`)           |
-| Testing    | Vitest — unit + integration against a throwaway real Postgres  |
-| CI         | GitHub Actions: lint, typecheck, tests, build on every PR      |
+| Testing    | Vitest (unit + integration on a throwaway Postgres), Playwright e2e |
+| CI         | GitHub Actions: lint, typecheck, tests, build, e2e on every PR |
 | Payments   | Stripe (planned — trial/paid access already enforced)          |
 
 ## Getting started
@@ -103,6 +103,7 @@ npm run dev
 | Candidate | `anna@demo.se`     | has a pending offer from Acme      |
 | Company   | `talent@acme.se`   | 10 days left of the free trial     |
 | Company   | `hr@nordicsoft.se` | active subscription                |
+| Company   | `talent@oldtown.example` | free trial ended — see the paywall |
 
 `npm run db:seed` **wipes all data** first — never run it against production.
 
@@ -110,6 +111,7 @@ npm run dev
 
 ```bash
 npm test          # unit + integration (starts its own Postgres — nothing needs to run)
+npm run test:e2e  # end-to-end in Chromium against a production build (`next start`)
 npm run lint
 npx tsc --noEmit
 ```
@@ -117,6 +119,12 @@ npx tsc --noEmit
 The integration tests start a throwaway embedded Postgres on a free port, apply the
 migrations and the demo seed, and exercise the data layer and server actions directly —
 including the core promise that **EMPLOYED candidates never come back from search**.
+
+The end-to-end tests (Playwright, `e2e/`) build the app and run it with `next start` against
+another throwaway database, then drive a real browser: both roles signing in, role guards,
+rate limiting, search ranking, a candidate switching to *Employed* and vanishing from a
+company's view, accepting an offer, the paywall, and the phone layout. First time only:
+`npx playwright install chromium`.
 
 ## Scripts
 
@@ -128,6 +136,7 @@ including the core promise that **EMPLOYED candidates never come back from searc
 | `npm run db:seed`    | Reset + seed demo data                        |
 | `npm run db:studio`  | Prisma Studio (DB GUI)                        |
 | `npm test`           | Vitest: unit + integration tests              |
+| `npm run test:e2e`   | Playwright end-to-end tests (builds first)    |
 | `npm run build`      | Production build                              |
 
 ## Architecture notes
