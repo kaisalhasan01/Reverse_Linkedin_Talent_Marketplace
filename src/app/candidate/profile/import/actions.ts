@@ -29,7 +29,8 @@ export async function uploadCv(_prev: UploadState, formData: FormData): Promise<
     return { error: "No readable text in the PDF. Scanned image CVs aren't supported yet." };
   }
 
-  const payload = await parseCv(text);
+  // The name tells the local parser which header line is *not* a headline.
+  const payload = await parseCv(text, { name: user.name ?? undefined });
 
   // One draft per user — a new upload replaces the previous draft.
   await prisma.importDraft.upsert({

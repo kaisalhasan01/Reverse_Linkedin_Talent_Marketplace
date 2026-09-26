@@ -9,25 +9,28 @@ import { prisma } from "@/lib/db";
 export async function listConversations(userId: string) {
   const conversations = await prisma.conversation.findMany({
     where: { participants: { some: { userId } } },
-    orderBy: { updatedAt: "desc" },
     include: {
       participants: { include: { user: { select: { id: true, name: true, role: true } } } },
       messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, createdAt: true, senderId: true } },
     },
   });
 
-  return conversations.map((c) => {
-    const other = c.participants.find((p) => p.userId !== userId)?.user;
-    const last = c.messages[0];
-    return {
-      id: c.id,
-      otherName: other?.name ?? "Unknown",
-      otherRole: other?.role ?? ("CANDIDATE" as const),
-      lastBody: last?.body ?? "",
-      lastAt: last?.createdAt ?? c.createdAt,
-      lastFromMe: last?.senderId === userId,
-    };
-  });
+  // Sort by the time we display (the latest message), not Conversation.updatedAt,
+  // which only moves when createMessage() bumps it.
+  return conversations
+    .map((c) => {
+      const other = c.participants.find((p) => p.userId !== userId)?.user;
+      const last = c.messages[0];
+      return {
+        id: c.id,
+        otherName: other?.name ?? "Unknown",
+        otherRole: other?.role ?? ("CANDIDATE" as const),
+        lastBody: last?.body ?? "",
+        lastAt: last?.createdAt ?? c.createdAt,
+        lastFromMe: last?.senderId === userId,
+      };
+    })
+    .sort((a, b) => b.lastAt.getTime() - a.lastAt.getTime());
 }
 
 export async function getConversation(conversationId: string, userId: string) {

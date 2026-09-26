@@ -16,6 +16,24 @@ const SECTION_PATTERNS: Record<string, RegExp> = {
 
 const YEAR_RANGE = /(\d{4})\s*[-–—]\s*(\d{4}|present|now|current|ongoing|nuvarande|pågående|idag)/i;
 const DEGREE = /\b(MSc|M\.Sc|BSc|B\.Sc|PhD|MBA|Master|Bachelor|Civilingenjör|Högskoleingenjör|Kandidat|Magister)\b/i;
+// Email, links, or a phone number (8+ digits/spaces/dashes) — never a headline.
+const CONTACT = /@|https?:\/\/|www\.|linkedin|github|\+?\d[\d\s()-]{6,}\d/i;
+const CV_TITLE = /^(cv|resume|résumé|curriculum vitae|meritförteckning)$/i;
+
+const words = (s: string) =>
+  s.toLowerCase().normalize("NFKC").replace(/[^\p{L}\s]/gu, " ").split(/\s+/).filter(Boolean);
+
+/** The candidate's own name heads most CVs — it's already on their account. */
+function isOwnName(line: string, name: string | undefined) {
+  if (!name) return false;
+  const nameWords = words(name);
+  const lineWords = words(line);
+  return (
+    nameWords.length > 0 &&
+    nameWords.every((w) => lineWords.includes(w)) &&
+    lineWords.length <= nameWords.length + 2 // allow a middle name or two
+  );
+}
 
 function sectionOf(line: string): string | null {
   const trimmed = line.trim().replace(/[:\s]+$/, "");
@@ -26,7 +44,7 @@ function sectionOf(line: string): string | null {
   return null;
 }
 
-export function parseCvHeuristically(text: string): ParsedCv {
+export function parseCvHeuristically(text: string, hints: { name?: string } = {}): ParsedCv {
   const lines = text.split(/\r?\n/).map((l) => l.trim());
   const result: ParsedCv = structuredClone(emptyParsedCv);
 
@@ -45,12 +63,20 @@ export function parseCvHeuristically(text: string): ParsedCv {
     else buckets.set(current, [line]);
   }
 
-  // Headline: first short header line that isn't contact info
+  // Headline: first short header line that isn't the candidate's name, a
+  // "CV" title or contact details. Location: a plain-text part of the
+  // contact line ("anna@x.se · 070-123 45 67 · Stockholm").
   for (const line of (buckets.get("header") ?? []).slice(0, 6)) {
     if (!line || line.length > 90) continue;
-    if (/[@\d]{4,}|https?:|linkedin|github/i.test(line)) continue;
-    if (result.headline === null) result.headline = line;
-    else break;
+    if (CONTACT.test(line)) {
+      result.location ??=
+        line
+          .split(/\s*[·•|,]\s*/)
+          .find((part) => /^\p{L}[\p{L}\s-]{1,39}$/u.test(part) && !isOwnName(part, hints.name)) ?? null;
+      continue;
+    }
+    if (CV_TITLE.test(line) || isOwnName(line, hints.name)) continue;
+    result.headline ??= line;
   }
 
   // Bio from summary section

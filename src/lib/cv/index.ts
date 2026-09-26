@@ -11,7 +11,10 @@ export * from "./types";
  * configured; otherwise (or on API failure) falls back to the local
  * heuristic so the feature always works — just with more manual review.
  */
-export async function parseCv(cvText: string): Promise<ImportDraftPayload> {
+export async function parseCv(
+  cvText: string,
+  hints: { name?: string } = {},
+): Promise<ImportDraftPayload> {
   if (process.env.ANTHROPIC_API_KEY) {
     try {
       return { engine: "claude", cv: await parseCvWithClaude(cvText) };
@@ -23,5 +26,5 @@ export async function parseCv(cvText: string): Promise<ImportDraftPayload> {
       }
     }
   }
-  return { engine: "heuristic", cv: parseCvHeuristically(cvText) };
+  return { engine: "heuristic", cv: parseCvHeuristically(cvText, hints) };
 }

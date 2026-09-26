@@ -13,6 +13,20 @@ export type CandidateSearchParams = {
 };
 
 /**
+ * Escape LIKE/ILIKE wildcards so filter input matches literally — otherwise
+ * a skill of "%" matches every candidate. Backslash is Postgres' default
+ * LIKE escape character.
+ */
+function likeEscape(input: string) {
+  return input.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** ILIKE pattern for "contains this text". */
+function contains(input: string) {
+  return `%${likeEscape(input)}%`;
+}
+
+/**
  * Company-facing candidate search. Only profiles marked LOOKING are ever
  * returned — being "Employed" hides you from companies by design.
  *
@@ -51,25 +65,25 @@ export async function searchCandidates(params: CandidateSearchParams) {
   const skillTerm = skill?.trim();
   if (skillTerm) {
     conditions.push(
-      Prisma.sql`EXISTS (SELECT 1 FROM unnest(p."skills") AS s WHERE s ILIKE ${skillTerm})`,
+      Prisma.sql`EXISTS (SELECT 1 FROM unnest(p."skills") AS s WHERE s ILIKE ${likeEscape(skillTerm)})`,
     );
   }
   const locationTerm = location?.trim();
   if (locationTerm) {
-    conditions.push(Prisma.sql`p."location" ILIKE ${"%" + locationTerm + "%"}`);
+    conditions.push(Prisma.sql`p."location" ILIKE ${contains(locationTerm)}`);
   }
   const universityTerm = university?.trim();
   if (universityTerm) {
     conditions.push(Prisma.sql`EXISTS (
       SELECT 1 FROM "Education" ed
-      WHERE ed."profileId" = p."id" AND ed."school" ILIKE ${"%" + universityTerm + "%"}
+      WHERE ed."profileId" = p."id" AND ed."school" ILIKE ${contains(universityTerm)}
     )`);
   }
   const employerTerm = employer?.trim();
   if (employerTerm) {
     conditions.push(Prisma.sql`EXISTS (
       SELECT 1 FROM "Experience" e
-      WHERE e."profileId" = p."id" AND e."company" ILIKE ${"%" + employerTerm + "%"}
+      WHERE e."profileId" = p."id" AND e."company" ILIKE ${contains(employerTerm)}
     )`);
   }
   const years = Number(minYears);
