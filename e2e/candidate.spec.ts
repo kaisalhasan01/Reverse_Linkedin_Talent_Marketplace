@@ -31,3 +31,27 @@ test.describe("on a phone", () => {
     expect(await rightmostEdge(page)).toBeLessThanOrEqual(390);
   });
 });
+
+test("profile: an end date before the start date is caught at the field", async ({ page }) => {
+  await signIn(page, "erik@demo.se");
+  await page.goto("/candidate/profile");
+  await page.getByText("+ Add experience").click();
+  const form = page.locator("form", { has: page.getByLabel("Start date") });
+
+  await form.getByLabel("Title").fill("Time Traveller");
+  await form.getByLabel("Company").fill("Acme");
+  await form.getByLabel("Start date").fill("2024-01-01");
+  await form.getByLabel("End date").fill("2020-01-01");
+  await form.getByRole("button", { name: "Add" }).click();
+  expect(await form.getByLabel("End date").evaluate((el: HTMLInputElement) => el.validity.rangeUnderflow)).toBe(true);
+  await expect(page.getByText("Time Traveller · Acme")).toHaveCount(0);
+
+  await form.getByLabel("End date").fill("2025-06-30");
+  await form.getByRole("button", { name: "Add" }).click();
+  const item = page.getByText("Time Traveller · Acme");
+  await expect(item).toBeVisible();
+
+  // clean up: remove exactly this entry (its row = the title's grandparent)
+  await item.locator("xpath=../..").getByRole("button", { name: "Remove" }).click();
+  await expect(item).toHaveCount(0);
+});

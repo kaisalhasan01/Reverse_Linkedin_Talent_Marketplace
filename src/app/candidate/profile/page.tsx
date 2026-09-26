@@ -3,6 +3,7 @@ import { requireCandidate } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { ProfileDisplay, fullProfileInclude } from "@/components/profile/profile-display";
+import { DateRangeFields, YearRangeFields } from "@/components/profile/range-fields";
 import {
   addCertification,
   addEducation,
@@ -76,8 +77,7 @@ export default async function ProfilePage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Title"><Input name="title" required placeholder="Fullstack Developer" /></Field>
                 <Field label="Company"><Input name="company" required placeholder="Acme AB" /></Field>
-                <Field label="Start date"><Input name="startDate" type="date" required /></Field>
-                <Field label="End date" hint="Leave empty if current."><Input name="endDate" type="date" /></Field>
+                <DateRangeFields />
               </div>
               <Field label="Description"><Textarea name="description" maxLength={1000} /></Field>
             </AddForm>
@@ -88,10 +88,7 @@ export default async function ProfilePage() {
                 <Field label="School"><Input name="school" required placeholder="Linköping University" /></Field>
                 <Field label="Degree"><Input name="degree" required placeholder="MSc" /></Field>
                 <Field label="Field of study"><Input name="field" required placeholder="Mechanical Engineering" /></Field>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Start year"><Input name="startYear" type="number" required min={1950} max={2100} /></Field>
-                  <Field label="End year"><Input name="endYear" type="number" min={1950} max={2100} /></Field>
-                </div>
+                <YearRangeFields />
               </div>
             </AddForm>
           ),
